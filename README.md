@@ -7,3 +7,14 @@ To launch the programs , launch launcher.bat and you can launch
 DON'T use python 3.14 use 3.13 please 
 
 thank and have fun
+
+
+NOTE of the update :1.1 
+
+- add a server in local
+- fix the qr code adaptive
+- create an laucher and a install
+
+NOTE of the update : 1.2
+
+-fix the install 

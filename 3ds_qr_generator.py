@@ -24,7 +24,7 @@ class LocalServerHandler(http.server.SimpleHTTPRequestHandler):
 class QRCodeGenerator:
     def __init__(self, root):
         self.root = root
-        self.root.title("3DS QR Code Generator - Multi-serveur + Serveur Local")
+        self.root.title("3DS QR Code Generator")
         self.root.geometry("1300x850")
         self.root.configure(bg="#1a1a2e")
         
@@ -46,11 +46,9 @@ class QRCodeGenerator:
         
         # URLs de serveurs prédéfinis
         self.preset_servers = {
-            "🏠 Serveur Local": f"http://localhost:{self.server_port}",
+            "🏠 Serveur Local": f"{self.get_local_ip}{self.server_port}",
             "Internet Archive - 3DS CIAs": "https://archive.org/download/nintendo3dscias",
-            "Internet Archive - 3DS Complete": "https://archive.org/download/3ds-complete-collection",
-            "Internet Archive - No-Intro": "https://archive.org/download/no-intro_20200517",
-            "Personnalisé": ""
+            "personalize": ""
         }
         
         self.current_url = ""
@@ -86,7 +84,7 @@ class QRCodeGenerator:
     def start_local_server(self):
         """Démarre le serveur HTTP local"""
         if self.server_running:
-            messagebox.showinfo("Info", "Le serveur est déjà en cours d'exécution")
+            messagebox.showinfo("Info", "the server is already running")
             return
         
         try:
@@ -103,40 +101,40 @@ class QRCodeGenerator:
             self.server_thread.start()
             
             self.server_running = True
-            self.start_server_btn.config(text="🛑 Arrêter le serveur", bg="#e74c3c")
+            self.start_server_btn.config(text=" stop the server", bg="#e74c3c")
             
             local_ip = self.get_local_ip()
-            msg = f"✅ Serveur démarré !\n\n"
-            msg += f"📍 Adresse locale: http://localhost:{self.server_port}\n"
-            msg += f"🌐 Adresse réseau: http://{local_ip}:{self.server_port}\n\n"
-            msg += f"📁 Dossier: {self.local_files_dir}\n\n"
-            msg += "Utilisez l'adresse réseau pour accéder depuis votre 3DS !"
+            msg = f" Serveur démarré !\n\n"
+            msg += f" Adresse local: {local_ip}{self.server_port}\n"
+            msg += f" Adress in the network: http://{local_ip}:{self.server_port}\n\n"
+            msg += f" Dossier: {self.local_files_dir}\n\n"
+            msg += "use the qr code to download the files on your 3ds with FBI"
             
             messagebox.showinfo("Serveur démarré", msg)
             self.server_status_label.config(
-                text=f"🟢 Serveur actif sur http://{local_ip}:{self.server_port}",
+                text=f" Server active in http://{local_ip}:{self.server_port}",
                 fg="#27ae60"
             )
             
         except Exception as e:
-            messagebox.showerror("Erreur", f"Impossible de démarrer le serveur:\n{str(e)}")
+            messagebox.showerror("Error", f"Impossible to start the server:\n{str(e)}")
     
     def stop_local_server(self):
         """Arrête le serveur HTTP local"""
         if not self.server_running:
-            messagebox.showinfo("Info", "Le serveur n'est pas en cours d'exécution")
+            messagebox.showinfo("Info", "the server is not running")
             return
         
         try:
             self.server.shutdown()
             self.server.server_close()
             self.server_running = False
-            self.start_server_btn.config(text="🚀 Démarrer le serveur local", bg="#27ae60")
-            self.server_status_label.config(text="🔴 Serveur arrêté", fg="#e74c3c")
-            messagebox.showinfo("Serveur arrêté", "Le serveur local a été arrêté")
+            self.start_server_btn.config(text="start the server local", bg="#27ae60")
+            self.server_status_label.config(text="stop the server", fg="#e74c3c")
+            messagebox.showinfo("server stopped", "the local server has been stopped")
             
         except Exception as e:
-            messagebox.showerror("Erreur", f"Erreur lors de l'arrêt du serveur:\n{str(e)}")
+            messagebox.showerror("Error", f"Error in the server to stop:\n{str(e)}")
     
     def toggle_server(self):
         """Active/désactive le serveur"""
@@ -148,10 +146,9 @@ class QRCodeGenerator:
     def add_file_to_server(self):
         """Ajoute un fichier au serveur local"""
         filenames = filedialog.askopenfilenames(
-            title="Sélectionnez des fichiers 3DS",
+            title="select a file",
             filetypes=[
                 ("Fichiers 3DS", "*.cia;*.3ds;*.3dsx"),
-                ("Archives", "*.zip;*.7z;*.rar"),
                 ("Tous les fichiers", "*.*")
             ]
         )
@@ -165,16 +162,16 @@ class QRCodeGenerator:
                     dest = os.path.join(self.local_files_dir, filename)
                     
                     if os.path.exists(dest):
-                        if not messagebox.askyesno("Fichier existant", f"{filename} existe déjà.\nRemplacer ?"):
+                        if not messagebox.askyesno("file exist", f"{filename} exist is already here.\nReplace ?"):
                             continue
                     
                     shutil.copy2(filepath, dest)
                     copied += 1
                 except Exception as e:
-                    messagebox.showerror("Erreur", f"Erreur lors de la copie de {filename}:\n{str(e)}")
+                    messagebox.showerror("Error", f"Error in the copy of {filename}:\n{str(e)}")
             
             if copied > 0:
-                messagebox.showinfo("Succès", f"{copied} fichier(s) ajouté(s) au serveur local !")
+                messagebox.showinfo("Success", f"{copied} is added to the local server !")
                 # Recharger si on affiche déjà les fichiers locaux
                 if "localhost" in self.url_entry.get():
                     self.load_local_files()
@@ -185,7 +182,7 @@ class QRCodeGenerator:
             self.games = []
             
             # Lister les fichiers dans le dossier
-            valid_extensions = ['.cia', '.3ds', '.3dsx', '.zip', '.7z', '.rar']
+            valid_extensions = ['.cia', '.3ds', '.3dsx']
             
             for filename in os.listdir(self.local_files_dir):
                 if any(filename.lower().endswith(ext) for ext in valid_extensions):
@@ -231,7 +228,7 @@ class QRCodeGenerator:
                 self.status_label.config(text=f"✅ {len(self.games)} fichier(s) local(aux) chargé(s)")
                 
         except Exception as e:
-            messagebox.showerror("Erreur", f"Erreur lors du chargement:\n{str(e)}")
+            messagebox.showerror("Error", f"Error in the loading :\n{str(e)}")
     
     def open_local_folder(self):
         """Ouvre le dossier local dans l'explorateur"""
@@ -246,7 +243,7 @@ class QRCodeGenerator:
         url = self.url_entry.get().strip()
         
         if not url:
-            messagebox.showwarning("Attention", "Veuillez entrer une URL valide")
+            messagebox.showwarning("warning", "enter a valid URL")
             return
         
         # Si c'est le serveur local, charger directement
@@ -267,7 +264,7 @@ class QRCodeGenerator:
             self.games = []
             links = soup.find_all('a', href=True)
             
-            valid_extensions = ['.cia', '.3ds', '.3dsx', '.zip', '.7z', '.rar']
+            valid_extensions = ['.cia', '.3ds', '.3dsx']
             
             for link in links:
                 href = link.get('href', '')
@@ -308,31 +305,31 @@ class QRCodeGenerator:
                     })
             
             if len(self.games) == 0:
-                messagebox.showwarning("Attention", f"Aucun fichier de jeu trouvé sur:\n{url}")
-                self.status_label.config(text="❌ Aucun jeu trouvé")
+                messagebox.showwarning("warning", f"none file was find in :\n{url}")
+                self.status_label.config(text="no file found")
             else:
                 self.games.sort(key=lambda x: x['name'])
                 self.filtered_games = self.games[:100]
                 self.update_game_list()
-                self.status_label.config(text=f"✅ {len(self.games)} jeux chargés depuis le serveur")
-                messagebox.showinfo("Succès", f"{len(self.games)} jeux chargés avec succès !")
+                self.status_label.config(text=f" {len(self.games)} game charge from server")
+                messagebox.showinfo("Succes", f"{len(self.games)} game was charge in the server !")
                 
         except requests.exceptions.RequestException as e:
-            messagebox.showerror("Erreur réseau", f"Impossible de se connecter au serveur:\n{str(e)}")
-            self.status_label.config(text="❌ Erreur de connexion")
+            messagebox.showerror("Error network", f"Impossible to charge:\n{str(e)}")
+            self.status_label.config(text="error of network")
         except Exception as e:
-            messagebox.showerror("Erreur", f"Erreur lors du chargement:\n{str(e)}")
-            self.status_label.config(text="❌ Erreur de chargement")
+            messagebox.showerror("Error", f"Error in the loading:\n{str(e)}")
+            self.status_label.config(text="error in the loading")
     
     def on_server_select(self, event):
         """Gère la sélection d'un serveur prédéfini"""
         selected = self.server_combo.get()
         
-        if selected == "Personnalisé":
+        if selected == "Personnalise":
             self.url_entry.config(state="normal")
             self.url_entry.delete(0, tk.END)
             self.url_entry.focus()
-        elif selected == "🏠 Serveur Local":
+        elif selected == "local server":
             local_ip = self.get_local_ip()
             url = f"http://{local_ip}:{self.server_port}"
             self.url_entry.config(state="normal")
@@ -349,7 +346,7 @@ class QRCodeGenerator:
         # Titre
         title = tk.Label(
             self.root,
-            text="3DS QR Code Generator - Serveur Local Intégré",
+            text="3DS QR Code Generator",
             font=("Arial", 20, "bold"),
             bg="#1a1a2e",
             fg="#00d4ff"
@@ -359,7 +356,7 @@ class QRCodeGenerator:
         # Frame serveur local
         local_server_frame = tk.LabelFrame(
             self.root,
-            text="🏠 Serveur Local",
+            text="local server",
             font=("Arial", 11, "bold"),
             bg="#16213e",
             fg="#00d4ff",
@@ -374,7 +371,7 @@ class QRCodeGenerator:
         
         self.start_server_btn = tk.Button(
             local_btn_frame,
-            text="🚀 Démarrer le serveur local",
+            text="launch the local server ",
             command=self.toggle_server,
             bg="#27ae60",
             fg="white",
@@ -386,7 +383,7 @@ class QRCodeGenerator:
         
         tk.Button(
             local_btn_frame,
-            text="➕ Ajouter fichier(s)",
+            text="add a file(s)",
             command=self.add_file_to_server,
             bg="#3498db",
             fg="white",
@@ -397,7 +394,7 @@ class QRCodeGenerator:
         
         tk.Button(
             local_btn_frame,
-            text="📁 Ouvrir dossier",
+            text="open the folder",
             command=self.open_local_folder,
             bg="#9b59b6",
             fg="white",
@@ -408,7 +405,7 @@ class QRCodeGenerator:
         
         tk.Button(
             local_btn_frame,
-            text="🔄 Charger fichiers locaux",
+            text="load the local file",
             command=self.load_local_files,
             bg="#f39c12",
             fg="white",
@@ -420,7 +417,7 @@ class QRCodeGenerator:
         # Statut serveur
         self.server_status_label = tk.Label(
             local_server_frame,
-            text="🔴 Serveur arrêté",
+            text="stop the server",
             font=("Arial", 10),
             bg="#16213e",
             fg="#e74c3c"
@@ -430,7 +427,7 @@ class QRCodeGenerator:
         # Frame serveur distant
         server_frame = tk.LabelFrame(
             self.root,
-            text="🌐 Serveurs Distants",
+            text="remote server",
             font=("Arial", 11, "bold"),
             bg="#16213e",
             fg="white",
@@ -458,7 +455,7 @@ class QRCodeGenerator:
             font=("Arial", 10),
             width=35
         )
-        self.server_combo.set("🏠 Serveur Local")
+        self.server_combo.set("local server")
         self.server_combo.pack(side="left", padx=5)
         self.server_combo.bind('<<ComboboxSelected>>', self.on_server_select)
         
@@ -489,7 +486,7 @@ class QRCodeGenerator:
         
         tk.Button(
             url_frame,
-            text="🔄 Charger",
+            text="load",
             command=self.load_from_server,
             bg="#27ae60",
             fg="white",
@@ -504,7 +501,7 @@ class QRCodeGenerator:
         
         tk.Label(
             search_frame,
-            text="🔍",
+            text="search",
             font=("Arial", 12),
             bg="#1a1a2e",
             fg="white"
@@ -533,7 +530,7 @@ class QRCodeGenerator:
         
         tk.Label(
             list_frame,
-            text="📦 Fichiers",
+            text="files",
             font=("Arial", 13, "bold"),
             bg="#16213e",
             fg="white"
@@ -563,7 +560,7 @@ class QRCodeGenerator:
         
         self.qr_title = tk.Label(
             qr_frame,
-            text="Démarrez le serveur local",
+            text="start server",
             font=("Arial", 12, "bold"),
             bg="#16213e",
             fg="white",
@@ -573,7 +570,7 @@ class QRCodeGenerator:
         
         self.info_label = tk.Label(
             qr_frame,
-            text="Ajoutez des fichiers et générez des QR codes",
+            text="add file and select it to generate the qr code",
             font=("Arial", 9),
             bg="#16213e",
             fg="#a8dadc",
@@ -596,7 +593,7 @@ class QRCodeGenerator:
         
         self.save_btn = tk.Button(
             btn_container,
-            text="💾 Sauvegarder QR",
+            text="Save QR",
             command=self.save_qr_code,
             bg="#6c5ce7",
             fg="white",
@@ -609,7 +606,7 @@ class QRCodeGenerator:
         
         self.browser_btn = tk.Button(
             btn_container,
-            text="🌐 Ouvrir lien",
+            text="open link",
             command=self.open_in_browser,
             bg="#e67e22",
             fg="white",
@@ -622,7 +619,7 @@ class QRCodeGenerator:
         
         tk.Label(
             qr_frame,
-            text="📱 Scannez avec FBI sur votre 3DS",
+            text="Scanne into your 3ds",
             font=("Arial", 9),
             bg="#16213e",
             fg="#a8dadc"
@@ -631,7 +628,7 @@ class QRCodeGenerator:
         # Statut
         self.status_label = tk.Label(
             self.root,
-            text="Prêt",
+            text="ready",
             font=("Arial", 9),
             bg="#0f3460",
             fg="white",
@@ -660,7 +657,7 @@ class QRCodeGenerator:
                    search_term in game['type'].lower()
             ][:100]
         self.update_game_list()
-        self.status_label.config(text=f"🔍 {len(self.filtered_games)} fichier(s)")
+        self.status_label.config(text=f"search {len(self.filtered_games)} fichier(s)")
     
     def on_game_select(self, event):
         selection = self.game_listbox.curselection()
@@ -742,7 +739,7 @@ class QRCodeGenerator:
             img = qr.make_image(fill_color="black", back_color="white")
             img.save(filename)
             
-            messagebox.showinfo("✅ Succès", f"QR Code sauvegardé:\n{filename}")
+            messagebox.showinfo("Succes", f"QR code save:\n{filename}")
     
     def open_in_browser(self):
         if self.selected_game:

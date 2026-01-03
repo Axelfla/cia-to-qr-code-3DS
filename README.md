@@ -17,6 +17,5 @@ NOTE of the update :1.1
 
 NOTE of the update : 1.2
 
--fix the install 
-
--translate into english
+- fix the install 
+- translate into english
